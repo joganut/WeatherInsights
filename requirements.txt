@@ -4,3 +4,4 @@ beautifulsoup4
 pandas
 altair
 cohere
+gpt4all
