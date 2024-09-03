@@ -68,7 +68,7 @@ st.markdown("### Get detailed AI recommendations, weather statistics, including 
 location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
 api_key = "53a8b377d161be08079ec9d785a4e968"
-gpt4all_model_path = "C:/Users/USER/Downloads/Documents"  # Replace with your actual GPT-4All model path
+gpt4all_model_path = "https://huggingface.co/Qwen/Qwen2-1.5B-Instruct-GGUF/resolve/main/qwen2-1_5b-instruct-q4_0.gguf"  # Replace with your actual GPT-4All model path
 
 if location:
     data = get_weather_data(api_key, location)
