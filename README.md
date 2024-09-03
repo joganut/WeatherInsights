@@ -1,5 +1,11 @@
 # 🌤️ Weather Insights
 
+Exciting Update: Weather Insights App Now with AI Recommendations! 🌤️
+
+I am thrilled to announce a major update to our Weather Insights app! 🚀
+
+Our app now features AI-powered recommendations to help you make the most of your day, no matter the weather. Whether you’re planning your week, deciding what to wear, or organizing outdoor activities, our AI recommendations have got you covered. 🌦️🌡️💧
+
 Welcome to the Weather Insights app! This Streamlit application provides detailed weather statistics, including temperature trends, humidity levels, and weather descriptions for the next 5 days.
 
 ## 🚀 Features
