@@ -149,7 +149,7 @@ if location:
         # Show a loading spinner while generating recommendations
         with st.spinner('Generating A.I Recommendations...'):
             # Generate recommendations for the current day
-            recommendations = generate_recommendations(df_current_day, gpt4all_model_path)
+            recommendations = generate_recommendations(df_current_day)
 
         # Display recommendations
         for i, rec in enumerate(recommendations):
