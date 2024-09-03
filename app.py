@@ -70,7 +70,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 st.title("🌤️ Weather Insights")
-st.markdown("### Get detailed weather statistics, including temperature trends, humidity levels, and weather descriptions for the next 5 days. 🌦️🌡️💧")
+st.markdown("### Get detailed AI recommendations, weather statistics, including temperature trends, humidity levels, and weather descriptions for the next 5 days. 🌦️🌡️💧")
 
 # Set default location to Lagos, Nigeria
 location = st.text_input("Enter a location:", "Lagos,ng")
