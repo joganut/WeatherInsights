@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 import altair as alt
-import cohere
+from gpt4all import GPT4All
 
 # Function to fetch weather data
 def get_weather_data(api_key, location):
@@ -26,24 +26,16 @@ def process_weather_data(data):
     df = pd.DataFrame(weather_data)
     return df
 
-# Function to split DataFrame by day
-def split_dataframe_by_day(df):
-    return [df[df['date'] == date] for date in df['date'].unique()]
-
-# Function to generate recommendations for each day using Cohere
-def generate_recommendations(df_chunks, cohere_api_key):
-    co = cohere.Client(cohere_api_key)
+# Function to generate recommendations for the current day using GPT-4All
+def generate_recommendations(df, gpt4all_model_path):
+    model = GPT4All("qwen2-1_5b-instruct-q4_0.gguf", model_path = gpt4all_model_path)
     recommendations = []
-    for chunk in df_chunks:
+    with model.chat_session():
         # Summarize the data to make the prompt more concise
-        summary = chunk[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
-        prompt = f"Based on the following weather data, provide recommendations:\n{summary}"
-        response = co.generate(
-            model='command-xlarge-nightly',  # You can choose different models
-            prompt=prompt,
-            max_tokens=512  # Reduce max_tokens to speed up response
-        )
-        recommendations.append(f"🌟 {response.generations[0].text}")
+        summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
+        prompt = f"Based on the following weather data, provide comprehensive recommendations:\n{summary}"
+        response = model.generate(prompt)
+        recommendations.append(f"🌟 {response}")
     return recommendations
 
 # Streamlit app
@@ -76,7 +68,7 @@ st.markdown("### Get detailed AI recommendations, weather statistics, including 
 location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
 api_key = "53a8b377d161be08079ec9d785a4e968"
-cohere_api_key = "OorFFzKyKvMA1h94siu76CM4WAJpOyQyT75bccSK"  # Replace with your actual Cohere API key
+gpt4all_model_path = "C:/Users/USER/Downloads/Documents"  # Replace with your actual GPT-4All model path
 
 if location:
     data = get_weather_data(api_key, location)
@@ -89,8 +81,9 @@ if location:
         next_5_days = pd.Timestamp.now() + pd.DateOffset(days=5)
         df = df[df['datetime'] <= next_5_days]
         
-        # Split DataFrame by day
-        df_chunks = split_dataframe_by_day(df)
+        # Filter DataFrame for the current day
+        current_day = pd.Timestamp.now().date()
+        df_current_day = df[df['date'] == current_day]
 
         # Style the DataFrame
         styled_df = df.style.set_properties(**{
@@ -155,10 +148,10 @@ if location:
 
         # Show a loading spinner while generating recommendations
         with st.spinner('Generating A.I Recommendations...'):
-            # Generate recommendations for each day
-            recommendations = generate_recommendations(df_chunks, cohere_api_key)
+            # Generate recommendations for the current day
+            recommendations = generate_recommendations(df_current_day, gpt4all_model_path)
 
         # Display recommendations
         for i, rec in enumerate(recommendations):
-            st.subheader(f"🧠 A.I Recommendations for Day {i+1}")
+            st.subheader(f"🧠 A.I Recommendations for Today")
             st.markdown(rec)
