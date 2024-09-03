@@ -27,8 +27,8 @@ def process_weather_data(data):
     return df
 
 # Function to generate recommendations for the current day using GPT-4All
-def generate_recommendations(df, gpt4all_model_path):
-    model = GPT4All("qwen2-1_5b-instruct-q4_0.gguf", model_path = gpt4all_model_path)
+def generate_recommendations(df):
+    model = GPT4All("qwen2-1_5b-instruct-q4_0.gguf")
     recommendations = []
     with model.chat_session():
         # Summarize the data to make the prompt more concise
@@ -68,7 +68,7 @@ st.markdown("### Get detailed AI recommendations, weather statistics, including 
 location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
 api_key = "53a8b377d161be08079ec9d785a4e968"
-gpt4all_model_path = "https://huggingface.co/Qwen/Qwen2-1.5B-Instruct-GGUF/resolve/main/qwen2-1_5b-instruct-q4_0.gguf"  # Replace with your actual GPT-4All model path
+# gpt4all_model_path = "https://huggingface.co/Qwen/Qwen2-1.5B-Instruct-GGUF/resolve/main/qwen2-1_5b-instruct-q4_0.gguf"  # Replace with your actual GPT-4All model path
 
 if location:
     data = get_weather_data(api_key, location)
