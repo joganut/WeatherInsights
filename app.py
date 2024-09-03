@@ -76,7 +76,7 @@ st.markdown("### Get detailed AI recommendations, weather statistics, including 
 location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
 api_key = "53a8b377d161be08079ec9d785a4e968"
-cohere_api_key = "R0DJy3asAjPB8UJzvtWZq54rgWqcTlO2vYd3h1bM"  # Replace with your actual Cohere API key
+cohere_api_key = "OorFFzKyKvMA1h94siu76CM4WAJpOyQyT75bccSK"  # Replace with your actual Cohere API key
 
 if location:
     data = get_weather_data(api_key, location)
