@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 import altair as alt
+import cohere
 
 # Function to fetch weather data
 def get_weather_data(api_key, location):
@@ -24,6 +25,26 @@ def process_weather_data(data):
         })
     df = pd.DataFrame(weather_data)
     return df
+
+# Function to split DataFrame by day
+def split_dataframe_by_day(df):
+    return [df[df['date'] == date] for date in df['date'].unique()]
+
+# Function to generate recommendations for each day using Cohere
+def generate_recommendations(df_chunks, cohere_api_key):
+    co = cohere.Client(cohere_api_key)
+    recommendations = []
+    for chunk in df_chunks:
+        # Summarize the data to make the prompt more concise
+        summary = chunk[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
+        prompt = f"Based on the following weather data, provide recommendations:\n{summary}"
+        response = co.generate(
+            model='command-xlarge-nightly',  # You can choose different models
+            prompt=prompt,
+            max_tokens=512  # Reduce max_tokens to speed up response
+        )
+        recommendations.append(f"🌟 {response.generations[0].text}")
+    return recommendations
 
 # Streamlit app
 st.set_page_config(page_title="Weather Insights", page_icon="🌤️", layout="wide")
@@ -55,6 +76,7 @@ st.markdown("### Get detailed weather statistics, including temperature trends, 
 location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
 api_key = "53a8b377d161be08079ec9d785a4e968"
+cohere_api_key = "R0DJy3asAjPB8UJzvtWZq54rgWqcTlO2vYd3h1bM"  # Replace with your actual Cohere API key
 
 if location:
     data = get_weather_data(api_key, location)
@@ -67,8 +89,8 @@ if location:
         next_5_days = pd.Timestamp.now() + pd.DateOffset(days=5)
         df = df[df['datetime'] <= next_5_days]
         
-        # Aggregate weather descriptions by date
-        weather_agg = df.groupby('date')['weather'].apply(lambda x: x.mode()[0]).reset_index()
+        # Split DataFrame by day
+        df_chunks = split_dataframe_by_day(df)
 
         # Style the DataFrame
         styled_df = df.style.set_properties(**{
@@ -130,3 +152,13 @@ if location:
             fontSize=16
         )
         st.altair_chart(weather_chart, use_container_width=True)
+
+        # Show a loading spinner while generating recommendations
+        with st.spinner('Generating A.I Recommendations...'):
+            # Generate recommendations for each day
+            recommendations = generate_recommendations(df_chunks, cohere_api_key)
+
+        # Display recommendations
+        for i, rec in enumerate(recommendations):
+            st.subheader(f"🧠 A.I Recommendations for Day {i+1}")
+            st.markdown(rec)
