@@ -30,8 +30,8 @@ def process_weather_data(data):
 def generate_recommendations(df):
     recommendations = []  # Initialize the recommendations list
     # URL of the release asset
-    asset_url = "#"
-    local_file_name = "ggml-replit-code-v1-3b.bin"
+    asset_url = "https://github.com/joganut/WeatherInsights/releases/download/v1.0/qwen2-1_5b-instruct-q4_0.gguf"
+    local_file_name = "qwen2-1_5b-instruct-q4_0.gguf"
 
     # Download the model file
     response = requests.get(asset_url)
