@@ -38,8 +38,11 @@ def generate_recommendations(df, client):
         "prompt_template": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
     }
     recommendations = []
-    for event in client.stream(model, input=input_data):
-        recommendations.append(f"🌟 {event}")
+    try:
+        for event in client.stream(model, input=input_data):
+            recommendations.append(f"🌟 {event}")
+    except replicate.exceptions.ReplicateError as e:
+        st.error(f"❌ Error: {e}")
     return recommendations
 
 # Streamlit app
