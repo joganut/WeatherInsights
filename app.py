@@ -37,7 +37,6 @@ def generate_recommendations(df, client):
     recommendations = []
     try:
         for event in client.stream(model, input=input_data):
-            st.write(event)  # Debug statement to check event content
             if hasattr(event, 'text'):
                 recommendations.append(event.text)  # Extract the text content
     except replicate.exceptions.ReplicateError as e:
