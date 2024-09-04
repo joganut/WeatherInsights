@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 import altair as alt
-
+from gpt4all import GPT4All
 
 # Function to fetch weather data
 def get_weather_data(api_key, location):
@@ -32,7 +32,7 @@ def generate_recommendations(df, gpt4all_model_path):
     with model.chat_session():
         summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
         prompt = f"Based on the following weather data, provide recommendations:\n{summary}"
-        response = model.generate(prompt,  max_tokens=1024 )
+        response = model.generate(prompt, max_tokens=1024)
         recommendations.append(f"🌟 {response}")
     return recommendations
 
@@ -62,7 +62,7 @@ st.markdown("### Get detailed weather statistics, including temperature trends, 
 
 location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
-api_key = "53a8b377d161be08079ec9d785a4e968"
+api_key = st.secrets["openweather_api_key"]  # Use Streamlit secrets management
 gpt4all_model_path = "C:/Users/USER/Downloads/Documents"  # Replace with your actual GPT-4All model path
 
 if location:
@@ -141,9 +141,9 @@ if location:
         )
         st.altair_chart(weather_chart, use_container_width=True)
 
-        # with st.spinner('Generating A.I Recommendations...'):
-        #     recommendations = generate_recommendations(df_current_day, gpt4all_model_path)
+        with st.spinner('Generating A.I Recommendations...'):
+            recommendations = generate_recommendations(df_current_day, gpt4all_model_path)
 
-        # for i, rec in enumerate(recommendations):
-        #     st.subheader(f"🧠 A.I Recommendations for Today")
-        #     st.markdown(rec)
+        for i, rec in enumerate(recommendations):
+            st.subheader(f"🧠 A.I Recommendations for Today")
+            st.markdown(rec)
