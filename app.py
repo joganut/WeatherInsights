@@ -5,7 +5,7 @@ import altair as alt
 import replicate
 
 # Initialize the Replicate client with your API token
-client = replicate.Client(api_token="r8_EbmxUuFSgG3QvnKEUaDcI270KIxyRZL1rQHYB")
+client = replicate.Client(api_token="r8_PQc47MlQSdk8yNmAld2DxL0dG6TUoM81W74FW")
 
 # Function to fetch weather data
 def get_weather_data(api_key, location):
