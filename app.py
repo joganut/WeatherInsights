@@ -2,52 +2,84 @@ import streamlit as st
 import requests
 import pandas as pd
 import altair as alt
+from gpt4all import GPT4All
 
 # Function to fetch weather data
-def get_weather_data(api_key, lat, lon):
-    url = f"http://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude=minutely,daily,alerts&appid={api_key}&units=metric"
+def get_weather_data(api_key, location):
+    url = f"http://api.openweathermap.org/data/2.5/forecast?q={location}&appid={api_key}&units=metric"
     response = requests.get(url)
     return response.json()
 
 # Function to process weather data
 def process_weather_data(data):
-    hourly_data = data['hourly']
+    weather_list = data['list']
     weather_data = []
-    for entry in hourly_data:
+    for entry in weather_list:
         weather_data.append({
-            "datetime": pd.to_datetime(entry['dt'], unit='s'),
-            "temp": entry['temp'],
-            "humidity": entry['humidity'],
+            "datetime": pd.to_datetime(entry['dt_txt']),
+            "date": pd.to_datetime(entry['dt_txt']).date(),
+            "temp": entry['main']['temp'],
+            "humidity": entry['main']['humidity'],
             "weather": entry['weather'][0]['description']
         })
     df = pd.DataFrame(weather_data)
     return df
 
+# Function to generate recommendations for the current day using GPT-4All
+def generate_recommendations(df, gpt4all_model_path):
+    model = GPT4All("Phi-3-mini-4k-instruct.Q4_0.gguf", model_path=gpt4all_model_path)
+    recommendations = []
+    with model.chat_session():
+        summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
+        prompt = f"Based on the following weather data, provide recommendations. categories like what to wear and more:\n{summary}"
+        response = model.generate(prompt,  max_tokens=1024 )
+        recommendations.append(f"🌟 {response}")
+    return recommendations
+
 # Streamlit app
 st.set_page_config(page_title="Weather Insights", page_icon="🌤️", layout="wide")
 
+# Custom CSS for mobile responsiveness
+st.markdown("""
+    <style>
+    .main .block-container {
+        max-width: 1200px;
+        padding: 1rem;
+    }
+    @media (max-width: 600px) {
+        .main .block-container {
+            padding: 0.5rem;
+        }
+        .stDataFrame {
+            overflow-x: auto;
+        }
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 st.title("🌤️ Weather Insights")
-st.markdown("### Get detailed weather statistics, including temperature trends, humidity levels, and weather descriptions for the next 48 hours. 🌦️🌡️💧")
+st.markdown("### Get detailed AI recommendations, weather statistics, including temperature trends, humidity levels, and weather descriptions for the next 5 days. 🌦️🌡️💧")
 
 location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
-api_key = st.secrets["openweather_api_key"]  # Use Streamlit secrets management
+api_key = "53a8b377d161be08079ec9d785a4e968"
+gpt4all_model_path = "C:/Users/USER/Desktop/WeatherInsights"  # Replace with your actual GPT-4All model path
 
 if location:
-    # Get latitude and longitude for the location
-    geocode_url = f"http://api.openweathermap.org/geo/1.0/direct?q={location}&limit=1&appid={api_key}"
-    geocode_response = requests.get(geocode_url).json()
-    if not geocode_response:
-        st.error("❌ Error: Location not found!")
+    data = get_weather_data(api_key, location)
+    if data.get('cod') != '200':
+        st.error(f"❌ Error: {data.get('message', 'Location not found!')}")
     else:
-        lat = geocode_response[0]['lat']
-        lon = geocode_response[0]['lon']
-        
-        data = get_weather_data(api_key, lat, lon)
         df = process_weather_data(data)
         
-        next_48_hours = pd.Timestamp.now() + pd.DateOffset(hours=48)
-        df = df[df['datetime'] <= next_48_hours]
+        next_5_days = pd.Timestamp.now() + pd.DateOffset(days=5)
+        df = df[df['datetime'] <= next_5_days]
+        
+        current_day = pd.Timestamp.now().date()
+        df_current_day = df[df['date'] == current_day]
+
+        # Debugging: Check if df_current_day has data
+        st.write("Current Day DataFrame:", df_current_day)
 
         styled_df = df.style.set_properties(**{
             'background-color': 'lavender',
@@ -55,7 +87,7 @@ if location:
             'border-color': 'white'
         }).highlight_max(subset=['temp', 'humidity'], color='lightcoral').highlight_min(subset=['temp', 'humidity'], color='lightblue')
 
-        st.write(f"📅 Weather data for {location} (Next 48 Hours)")
+        st.write(f"📅 Weather data for {location} (Next 5 Days)")
         st.dataframe(styled_df)
 
         st.subheader("🌡️ Temperature Trends")
@@ -108,3 +140,10 @@ if location:
             fontSize=16
         )
         st.altair_chart(weather_chart, use_container_width=True)
+
+        with st.spinner('Generating A.I Recommendations...'):
+            recommendations = generate_recommendations(df_current_day, gpt4all_model_path)
+
+        for i, rec in enumerate(recommendations):
+            st.subheader(f"🧠 A.I Recommendations for Today")
+            st.markdown(rec)
