@@ -2,6 +2,10 @@ import streamlit as st
 import requests
 import pandas as pd
 import altair as alt
+import replicate
+
+# Initialize the Replicate client with your API token
+client = replicate.Client(api_token="r8_9Rx6ypIOrsDuJDTFUwHIceZO7MPPGrg0nkijU")
 
 # Function to fetch weather data
 def get_weather_data(api_key, location):
@@ -24,15 +28,18 @@ def process_weather_data(data):
     df = pd.DataFrame(weather_data)
     return df
 
-# Function to generate recommendations for the current day using GPT-4All
-def generate_recommendations(df, gpt4all_model_path):
-    model = GPT4All("Phi-3-mini-4k-instruct.Q4_0.gguf", model_path=gpt4all_model_path)
+# Function to generate recommendations for the current day using Replicate
+def generate_recommendations(df, client):
+    model = "meta/meta-llama-3-8b-instruct"
+    summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
+    input_data = {
+        "prompt": f"Based on the following weather data, provide recommendations. categories like what to wear and more:\n{summary}",
+        "max_new_tokens": 512,
+        "prompt_template": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+    }
     recommendations = []
-    with model.chat_session():
-        summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
-        prompt = f"Based on the following weather data, provide recommendations. categories like what to wear and more:\n{summary}"
-        response = model.generate(prompt,  max_tokens=1024 )
-        recommendations.append(f"🌟 {response}")
+    for event in client.stream(model, input=input_data):
+        recommendations.append(f"🌟 {event}")
     return recommendations
 
 # Streamlit app
@@ -62,7 +69,6 @@ st.markdown("### Get detailed AI recommendations, weather statistics, including 
 location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
 api_key = "53a8b377d161be08079ec9d785a4e968"
-gpt4all_model_path = "C:/Users/USER/Desktop/WeatherInsights"  # Replace with your actual GPT-4All model path
 
 if location:
     data = get_weather_data(api_key, location)
@@ -135,7 +141,7 @@ if location:
         st.altair_chart(weather_chart, use_container_width=True)
 
         with st.spinner('Generating A.I Recommendations...'):
-            recommendations = generate_recommendations(df, gpt4all_model_path)
+            recommendations = generate_recommendations(df, client)
 
         for i, rec in enumerate(recommendations):
             st.subheader(f"🧠 A.I Recommendations for Today")
