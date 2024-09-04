@@ -145,6 +145,6 @@ if location:
         # with st.spinner('Generating A.I Recommendations...'):
         #     recommendations = generate_recommendations(df, client)
 
-        for i, rec in enumerate(recommendations):
-            st.subheader(f"🧠 A.I Recommendations for Today")
-            st.markdown(rec)
+        # for i, rec in enumerate(recommendations):
+        #     st.subheader(f"🧠 A.I Recommendations for Today")
+        #     st.markdown(rec)
