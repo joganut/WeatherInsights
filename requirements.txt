@@ -3,3 +3,4 @@ requests
 pandas
 altair
 gpt4all==1.0.5
+setuptools
