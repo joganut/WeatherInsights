@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 import altair as alt
+import replicate
 
 # Function to fetch weather data
 def get_weather_data(api_key, location):
@@ -24,6 +25,23 @@ def process_weather_data(data):
     df = pd.DataFrame(weather_data)
     return df
 
+# Function to generate recommendations for the current day using Replicate
+def generate_recommendations(df, client):
+    model = "meta/meta-llama-3-8b-instruct"
+    summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
+    input_data = {
+        "prompt": f"Based on the following weather data, provide recommendations. categories like what to wear and more:\n{summary}",
+        "max_new_tokens": 512,
+        "prompt_template": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+    }
+    recommendations = []
+    try:
+        for event in client.stream(model, input=input_data):
+            recommendations.append(f"🌟 {event}")
+    except replicate.exceptions.ReplicateError as e:
+        st.error(f"❌ Error: {e}")
+    return recommendations
+
 # Streamlit app
 st.set_page_config(page_title="Weather Insights", page_icon="🌤️", layout="wide")
 
@@ -32,11 +50,11 @@ st.markdown("""
     <style>
     .main .block-container {
         max-width: 1200px;
-        padding: 1rem;
+        padding: 1rem.
     }
     @media (max-width: 600px) {
         .main .block-container {
-            padding: 0.5rem;
+            padding: 0.5rem.
         }
         .stDataFrame {
             overflow-x: auto.
@@ -46,7 +64,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 st.title("🌤️ Weather Insights")
-st.markdown("#### Get weather statistics, including temperature trends, humidity levels, and weather descriptions for the next 5 days. 🌦️🌡️💧")
+st.markdown("### Get detailed AI recommendations, weather statistics, including temperature trends, humidity levels, and weather descriptions for the next 5 days. 🌦️🌡️💧")
 
 location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
@@ -121,3 +139,13 @@ if location:
             fontSize=16
         )
         st.altair_chart(weather_chart, use_container_width=True)
+
+        # Initialize the Replicate client with your API token from secrets
+        client = replicate.Client(api_token=st.secrets["api_key"])
+
+        with st.spinner('Generating A.I Recommendations...'):
+            recommendations = generate_recommendations(df, client)
+
+        for i, rec in enumerate(recommendations):
+            st.subheader(f"🧠 A.I Recommendations for Today")
+            st.markdown(rec)
