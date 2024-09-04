@@ -8,7 +8,11 @@ import replicate
 def get_weather_data(api_key, location):
     url = f"http://api.openweathermap.org/data/2.5/forecast?q={location}&appid={api_key}&units=metric"
     response = requests.get(url)
-    return response.json()
+    if response.status_code == 200:
+        return response.json()
+    else:
+        st.error(f"Error fetching data: {response.status_code}")
+        return None
 
 # Function to process weather data
 def process_weather_data(data):
@@ -71,13 +75,11 @@ st.markdown("### Get detailed AI recommendations, weather statistics, including 
 
 location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
-api_key = "53a8b377d161be08079ec9d785a4e968"
+api_key = st.secrets["openweathermap_api_key"]
 
 if location:
     data = get_weather_data(api_key, location)
-    if data.get('cod') != '200':
-        st.error(f"❌ Error: {data.get('message', 'Location not found!')}")
-    else:
+    if data and data.get('cod') == '200':
         df = process_weather_data(data)
         
         next_5_days = pd.Timestamp.now() + pd.DateOffset(days=5)
@@ -151,3 +153,5 @@ if location:
 
         st.subheader("🧠 A.I Recommendations for Today")
         st.markdown(recommendations)
+    else:
+        st.error(f"❌ Error: {data.get('message', 'Location not found!')}")
