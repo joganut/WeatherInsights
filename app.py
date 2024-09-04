@@ -2,10 +2,9 @@ import streamlit as st
 import requests
 import pandas as pd
 import altair as alt
-import replicate
 
-# Initialize the Replicate client with your API token
-client = replicate.Client(api_token="r8_PQc47MlQSdk8yNmAld2DxL0dG6TUoM81W74FW")
+
+
 
 # Function to fetch weather data
 def get_weather_data(api_key, location):
@@ -143,8 +142,8 @@ if location:
         )
         st.altair_chart(weather_chart, use_container_width=True)
 
-        with st.spinner('Generating A.I Recommendations...'):
-            recommendations = generate_recommendations(df, client)
+        # with st.spinner('Generating A.I Recommendations...'):
+        #     recommendations = generate_recommendations(df, client)
 
         for i, rec in enumerate(recommendations):
             st.subheader(f"🧠 A.I Recommendations for Today")
