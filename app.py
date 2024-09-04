@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 import altair as alt
-
+from gpt4all import GPT4All
 
 # Function to fetch weather data
 def get_weather_data(api_key, location):
@@ -74,12 +74,6 @@ if location:
         
         next_5_days = pd.Timestamp.now() + pd.DateOffset(days=5)
         df = df[df['datetime'] <= next_5_days]
-        
-        current_day = pd.Timestamp.now().date()
-        df_current_day = df[df['date'] == current_day]
-
-        # Debugging: Check if df_current_day has data
-        st.write("Current Day DataFrame:", df_current_day)
 
         styled_df = df.style.set_properties(**{
             'background-color': 'lavender',
@@ -142,7 +136,7 @@ if location:
         st.altair_chart(weather_chart, use_container_width=True)
 
         with st.spinner('Generating A.I Recommendations...'):
-            recommendations = generate_recommendations(df_current_day, gpt4all_model_path)
+            recommendations = generate_recommendations(df, gpt4all_model_path)
 
         for i, rec in enumerate(recommendations):
             st.subheader(f"🧠 A.I Recommendations for Today")
