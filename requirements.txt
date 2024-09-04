@@ -2,5 +2,5 @@ streamlit
 requests
 pandas
 altair
-gpt4all == 1.9.0
+gpt4all == 2.1.0
 setuptools
