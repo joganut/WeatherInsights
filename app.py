@@ -1,34 +1,3 @@
-import streamlit as st
-import requests
-import pandas as pd
-import altair as alt
-import replicate
-
-# Function to fetch weather data
-def get_weather_data(api_key, location):
-    url = f"http://api.openweathermap.org/data/2.5/forecast?q={location}&appid={api_key}&units=metric"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        st.error(f"Error fetching data: {response.status_code}")
-        return None
-
-# Function to process weather data
-def process_weather_data(data):
-    weather_list = data['list']
-    weather_data = []
-    for entry in weather_list:
-        weather_data.append({
-            "datetime": pd.to_datetime(entry['dt_txt']),
-            "date": pd.to_datetime(entry['dt_txt']).date(),
-            "temp": entry['main']['temp'],
-            "humidity": entry['main']['humidity'],
-            "weather": entry['weather'][0]['description']
-        })
-    df = pd.DataFrame(weather_data)
-    return df
-
 # Function to generate recommendations for the current day using Replicate
 def generate_recommendations(df, client):
     model = "meta/meta-llama-3-8b-instruct"
@@ -47,7 +16,8 @@ def generate_recommendations(df, client):
                 recommendations.append(event.text)  # Extract the text content
     except replicate.exceptions.ReplicateError as e:
         st.error(f"❌ Error: {e}")
-    return " ".join(recommendations)
+    formatted_recommendations = "\n\n".join(recommendations)  # Join recommendations with double newlines for better readability
+    return formatted_recommendations
 
 # Streamlit app
 st.set_page_config(page_title="Weather Insights", page_icon="🌤️", layout="wide")
