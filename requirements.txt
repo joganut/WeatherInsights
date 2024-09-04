@@ -2,5 +2,3 @@ streamlit
 requests
 pandas
 altair
-gpt4all
-setuptools
