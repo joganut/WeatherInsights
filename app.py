@@ -144,7 +144,7 @@ if location:
         st.altair_chart(weather_chart, use_container_width=True)
 
         # Initialize the Replicate client with your API token from secrets
-        client = replicate.Client(api_token=st.secrets["replicate"]["api_key"])
+        client = replicate.Client(api_token=st.secrets["api_key"])
 
         with st.spinner('Generating A.I Recommendations...'):
             recommendations = generate_recommendations(df, client)
