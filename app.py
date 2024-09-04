@@ -12,7 +12,6 @@ def get_weather_data(api_key, location):
 
 # Function to process weather data
 def process_weather_data(data):
-    # Extract relevant data
     weather_list = data['list']
     weather_data = []
     for entry in weather_list:
@@ -27,33 +26,13 @@ def process_weather_data(data):
     return df
 
 # Function to generate recommendations for the current day using GPT-4All
-def generate_recommendations(df):
-    recommendations = []  # Initialize the recommendations list
-    # URL of the release asset
-    # asset_url = "https://github.com/joganut/WeatherInsights/releases/download/test/orca-mini-3b.ggmlv3.q4_0.bin"
-    local_file_name = "https://huggingface.co/TheBloke/orca_mini_3B-GGML/resolve/main/orca-mini-3b.ggmlv3.q4_0.bin"
-
-
-    # # Download the model file
-    # response = requests.get(asset_url)
-    # with open(local_file_name, "wb") as file:
-    #     file.write(response.content)
-        
-    # List available models
-    available_models = GPT4All.list_models()
-    st.write("Available models:", available_models)
-    
-    # # Check if the model filename is in the list of available models
-    # if local_file_name not in available_models:
-    #     raise ValueError(f"Model filename not in model list: {local_file_name}")
-        
-    model = GPT4All(model_name=local_file_name)
-        
+def generate_recommendations(df, gpt4all_model_path):
+    model = GPT4All("Phi-3-mini-4k-instruct.Q4_0.gguf", model_path=gpt4all_model_path)
+    recommendations = []
     with model.chat_session():
-        # Summarize the data to make the prompt more concise
         summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
-        prompt = f"Based on the following weather data, provide comprehensive recommendations:\n{summary}"
-        response = model.generate(prompt)
+        prompt = f"Based on the following weather data, provide recommendations:\n{summary}"
+        response = model.generate(prompt,  max_tokens=1024 )
         recommendations.append(f"🌟 {response}")
     return recommendations
 
@@ -63,12 +42,10 @@ st.set_page_config(page_title="Weather Insights", page_icon="🌤️", layout="w
 # Custom CSS for mobile responsiveness
 st.markdown("""
     <style>
-    /* Make the page wide by default */
     .main .block-container {
         max-width: 1200px;
         padding: 1rem;
     }
-    /* Mobile responsiveness */
     @media (max-width: 600px) {
         .main .block-container {
             padding: 0.5rem;
@@ -83,11 +60,10 @@ st.markdown("""
 st.title("🌤️ Weather Insights")
 st.markdown("### Get detailed AI recommendations, weather statistics, including temperature trends, humidity levels, and weather descriptions for the next 5 days. 🌦️🌡️💧")
 
-# Set default location to Lagos, Nigeria
 location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
 api_key = "53a8b377d161be08079ec9d785a4e968"
-# gpt4all_model_path = "https://huggingface.co/Qwen/Qwen2-1.5B-Instruct-GGUF/resolve/main/qwen2-1_5b-instruct-q4_0.gguf"  # Replace with your actual GPT-4All model path
+gpt4all_model_path = "C:/Users/USER/Downloads/Documents"  # Replace with your actual GPT-4All model path
 
 if location:
     data = get_weather_data(api_key, location)
@@ -96,15 +72,15 @@ if location:
     else:
         df = process_weather_data(data)
         
-        # Filter for the next 5 days
         next_5_days = pd.Timestamp.now() + pd.DateOffset(days=5)
         df = df[df['datetime'] <= next_5_days]
         
-        # Filter DataFrame for the current day
         current_day = pd.Timestamp.now().date()
         df_current_day = df[df['date'] == current_day]
 
-        # Style the DataFrame
+        # Debugging: Check if df_current_day has data
+        st.write("Current Day DataFrame:", df_current_day)
+
         styled_df = df.style.set_properties(**{
             'background-color': 'lavender',
             'color': 'black',
@@ -165,12 +141,9 @@ if location:
         )
         st.altair_chart(weather_chart, use_container_width=True)
 
-        # Show a loading spinner while generating recommendations
         with st.spinner('Generating A.I Recommendations...'):
-            # Generate recommendations for the current day
-            recommendations = generate_recommendations(df_current_day)
+            recommendations = generate_recommendations(df_current_day, gpt4all_model_path)
 
-        # Display recommendations
         for i, rec in enumerate(recommendations):
             st.subheader(f"🧠 A.I Recommendations for Today")
             st.markdown(rec)
