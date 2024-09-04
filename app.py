@@ -75,7 +75,7 @@ st.markdown("### Get detailed AI recommendations, weather statistics, including 
 
 location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
-api_key = st.secrets["openweathermap_api_key"]
+api_key = "53a8b377d161be08079ec9d785a4e968"
 
 if location:
     data = get_weather_data(api_key, location)
