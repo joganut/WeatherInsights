@@ -31,7 +31,7 @@ def generate_recommendations(df):
     recommendations = []  # Initialize the recommendations list
     # URL of the release asset
     # asset_url = "https://github.com/joganut/WeatherInsights/releases/download/test/orca-mini-3b.ggmlv3.q4_0.bin"
-    local_file_name = "ggml-replit-code-v1-3b.bin"
+    # local_file_name = "ggml-replit-code-v1-3b.bin"
 
 
     # # Download the model file
