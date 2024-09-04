@@ -31,7 +31,7 @@ def generate_recommendations(df):
     recommendations = []  # Initialize the recommendations list
     # URL of the release asset
     asset_url = "https://github.com/joganut/WeatherInsights/releases/download/v1.0/qwen2-1_5b-instruct-q4_0.gguf"
-    local_file_name = "qwen2-1_5b-instruct-q4_0.bin"
+    local_file_name = "starcoderbase-3b-ggml.bin"
 
     # Download the model file
     response = requests.get(asset_url)
