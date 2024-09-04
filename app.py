@@ -28,7 +28,7 @@ def process_weather_data(data):
 
 # Function to generate recommendations for the current day using GPT-4All
 def generate_recommendations(df):
-    model = GPT4All("qwen2-1_5b-instruct-q4_0.gguf")
+    model = GPT4All(model_name = "qwen2-1_5b-instruct-q4_0.gguf")
     recommendations = []
     with model.chat_session():
         # Summarize the data to make the prompt more concise
