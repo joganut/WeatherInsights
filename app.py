@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 import altair as alt
-from gpt4all import GPT4All
+
 
 # Function to fetch weather data
 def get_weather_data(api_key, location):
