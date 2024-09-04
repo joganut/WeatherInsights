@@ -30,7 +30,7 @@ def process_weather_data(data):
 def generate_recommendations(df):
     recommendations = []  # Initialize the recommendations list
     # URL of the release asset
-    #asset_url = "https://huggingface.co/nomic-ai/ggml-replit-code-v1-3b/resolve/main/ggml-replit-code-v1-3b.bin"
+    asset_url = "#"
     local_file_name = "ggml-replit-code-v1-3b.bin"
 
     # Download the model file
