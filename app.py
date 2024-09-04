@@ -27,22 +27,22 @@ def process_weather_data(data):
     df = pd.DataFrame(weather_data)
     return df
 
-# Function to generate recommendations for the current day using Replicate
-def generate_recommendations(df, client):
-    model = "meta/meta-llama-3-8b-instruct"
-    summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
-    input_data = {
-        "prompt": f"Based on the following weather data, provide recommendations. categories like what to wear and more:\n{summary}",
-        "max_new_tokens": 512,
-        "prompt_template": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
-    }
-    recommendations = []
-    try:
-        for event in client.stream(model, input=input_data):
-            recommendations.append(f"🌟 {event}")
-    except replicate.exceptions.ReplicateError as e:
-        st.error(f"❌ Error: {e}")
-    return recommendations
+# # Function to generate recommendations for the current day using Replicate
+# def generate_recommendations(df, client):
+#     model = "meta/meta-llama-3-8b-instruct"
+#     summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
+#     input_data = {
+#         "prompt": f"Based on the following weather data, provide recommendations. categories like what to wear and more:\n{summary}",
+#         "max_new_tokens": 512,
+#         "prompt_template": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+#     }
+#     recommendations = []
+#     try:
+#         for event in client.stream(model, input=input_data):
+#             recommendations.append(f"🌟 {event}")
+#     except replicate.exceptions.ReplicateError as e:
+#         st.error(f"❌ Error: {e}")
+#     return recommendations
 
 # Streamlit app
 st.set_page_config(page_title="Weather Insights", page_icon="🌤️", layout="wide")
