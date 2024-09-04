@@ -29,6 +29,7 @@ def process_weather_data(data):
 def generate_recommendations(df, client):
     model = "meta/meta-llama-3-8b-instruct"
     summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
+    st.write("Summary for recommendations:", summary)  # Debug statement
     input_data = {
         "prompt": f"Based on the following weather data, provide recommendations. categories like what to wear and more:\n{summary}",
         "max_new_tokens": 512,
@@ -37,6 +38,7 @@ def generate_recommendations(df, client):
     recommendations = []
     try:
         for event in client.stream(model, input=input_data):
+            st.write("Event received:", event)  # Debug statement
             if hasattr(event, 'text'):
                 recommendations.append(event.text)  # Extract the text content
     except replicate.exceptions.ReplicateError as e:
@@ -142,7 +144,7 @@ if location:
         st.altair_chart(weather_chart, use_container_width=True)
 
         # Initialize the Replicate client with your API token from secrets
-        client = replicate.Client(api_token=st.secrets["api_key"])
+        client = replicate.Client(api_token=st.secrets["replicate"]["api_key"])
 
         with st.spinner('Generating A.I Recommendations...'):
             recommendations = generate_recommendations(df, client)
