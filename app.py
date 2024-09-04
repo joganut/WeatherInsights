@@ -33,10 +33,10 @@ def generate_recommendations(df):
     asset_url = "https://github.com/joganut/WeatherInsights/releases/download/test/orca-mini-3b.ggmlv3.q4_0.bin"
     local_file_name = "orca-mini-3b.ggmlv3.q4_0.bin"
 
-    # Download the model file
-    response = requests.get(asset_url)
-    with open(local_file_name, "wb") as file:
-        file.write(response.content)
+    # # Download the model file
+    # response = requests.get(asset_url)
+    # with open(local_file_name, "wb") as file:
+    #     file.write(response.content)
         
     # List available models
     available_models = GPT4All.list_models()
