@@ -33,6 +33,7 @@ def generate_recommendations(df):
     asset_url = "https://github.com/joganut/WeatherInsights/releases/download/test/orca-mini-3b.ggmlv3.q4_0.bin"
     local_file_name = "orca-mini-3b.ggmlv3.q4_0.bin"
 
+
     # # Download the model file
     # response = requests.get(asset_url)
     # with open(local_file_name, "wb") as file:
@@ -42,9 +43,9 @@ def generate_recommendations(df):
     available_models = GPT4All.list_models()
     st.write("Available models:", available_models)
     
-    # Check if the model filename is in the list of available models
-    if local_file_name not in available_models:
-        raise ValueError(f"Model filename not in model list: {local_file_name}")
+    # # Check if the model filename is in the list of available models
+    # if local_file_name not in available_models:
+    #     raise ValueError(f"Model filename not in model list: {local_file_name}")
         
     model = GPT4All(model_name=local_file_name)
         
