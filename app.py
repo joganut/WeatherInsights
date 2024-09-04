@@ -141,9 +141,9 @@ if location:
         )
         st.altair_chart(weather_chart, use_container_width=True)
 
-        with st.spinner('Generating A.I Recommendations...'):
-            recommendations = generate_recommendations(df_current_day, gpt4all_model_path)
+        # with st.spinner('Generating A.I Recommendations...'):
+        #     recommendations = generate_recommendations(df_current_day, gpt4all_model_path)
 
-        for i, rec in enumerate(recommendations):
-            st.subheader(f"🧠 A.I Recommendations for Today")
-            st.markdown(rec)
+        # for i, rec in enumerate(recommendations):
+        #     st.subheader(f"🧠 A.I Recommendations for Today")
+        #     st.markdown(rec)
