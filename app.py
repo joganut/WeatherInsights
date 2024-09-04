@@ -37,10 +37,10 @@ def generate_recommendations(df, client):
     recommendations = []
     try:
         for event in client.stream(model, input=input_data):
-            recommendations.append(f"🌟 {event}")
+            recommendations.append(event)
     except replicate.exceptions.ReplicateError as e:
         st.error(f"❌ Error: {e}")
-    return recommendations
+    return " ".join(recommendations)
 
 # Streamlit app
 st.set_page_config(page_title="Weather Insights", page_icon="🌤️", layout="wide")
@@ -50,14 +50,14 @@ st.markdown("""
     <style>
     .main .block-container {
         max-width: 1200px;
-        padding: 1rem.
+        padding: 1rem;
     }
     @media (max-width: 600px) {
         .main .block-container {
-            padding: 0.5rem.
+            padding: 0.5rem;
         }
         .stDataFrame {
-            overflow-x: auto.
+            overflow-x: auto;
         }
     }
     </style>
@@ -146,6 +146,5 @@ if location:
         with st.spinner('Generating A.I Recommendations...'):
             recommendations = generate_recommendations(df, client)
 
-        for i, rec in enumerate(recommendations):
-            st.subheader(f"🧠 A.I Recommendations for Today")
-            st.markdown(rec)
+        st.subheader("🧠 A.I Recommendations for Today")
+        st.markdown(recommendations)
