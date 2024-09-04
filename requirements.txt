@@ -2,4 +2,4 @@ streamlit
 requests
 pandas
 altair
-pip install gpt4all==1.0.5
+gpt4all==1.0.5
