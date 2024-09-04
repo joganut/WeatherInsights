@@ -38,6 +38,11 @@ def generate_recommendations(df):
     with open(local_file_name, "wb") as file:
         file.write(response.content)
         
+    # Check if the model filename is in the list of available models
+    available_models = GPT4All.list_models()
+    if local_file_name not in available_models:
+        raise ValueError(f"Model filename not in model list: {local_file_name}")
+        
     model = GPT4All(model_name=local_file_name)
         
     with model.chat_session():
