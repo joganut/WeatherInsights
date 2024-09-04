@@ -13,7 +13,7 @@ def get_weather_data(api_key, location):
 def process_weather_data(data):
     weather_list = data['list']
     weather_data = []
-    for entry in weather_list:
+    for entry in the weather list:
         weather_data.append({
             "datetime": pd.to_datetime(entry['dt_txt']),
             "date": pd.to_datetime(entry['dt_txt']).date(),
