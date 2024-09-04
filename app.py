@@ -28,6 +28,7 @@ def process_weather_data(data):
 
 # Function to generate recommendations for the current day using GPT-4All
 def generate_recommendations(df):
+    recommendations = []  # Initialize the recommendations list
     # URL of the release asset
     asset_url = "https://github.com/joganut/WeatherInsights/releases/download/v1.0/qwen2-1_5b-instruct-q4_0.gguf"
     local_file_name = "qwen2-1_5b-instruct-q4_0.gguf"
@@ -37,15 +38,15 @@ def generate_recommendations(df):
     with open(local_file_name, "wb") as file:
         file.write(response.content)
         
-        model = GPT4All(model_name=local_file_name)
+    model = GPT4All(model_name=local_file_name)
         
-        with model.chat_session():
-            # Summarize the data to make the prompt more concise
-            summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
-            prompt = f"Based on the following weather data, provide comprehensive recommendations:\n{summary}"
-            response = model.generate(prompt)
-            recommendations.append(f"🌟 {response}")
-        return recommendations
+    with model.chat_session():
+        # Summarize the data to make the prompt more concise
+        summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
+        prompt = f"Based on the following weather data, provide comprehensive recommendations:\n{summary}"
+        response = model.generate(prompt)
+        recommendations.append(f"🌟 {response}")
+    return recommendations
 
 # Streamlit app
 st.set_page_config(page_title="Weather Insights", page_icon="🌤️", layout="wide")
