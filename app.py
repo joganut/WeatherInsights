@@ -151,6 +151,6 @@ if location:
         with st.spinner('Generating A.I Recommendations...'):
             recommendations = generate_recommendations(df_current_day, replicate_model)
 
-        for i, rec in enumerate(recommendations):
+        # for i, rec in enumerate(recommendations):
             st.subheader(f"🧠 A.I Recommendations for Today")
             st.markdown(rec)
