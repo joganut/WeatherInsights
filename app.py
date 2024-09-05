@@ -5,7 +5,7 @@ import altair as alt
 import replicate
 
 # Initialize the Replicate client with your API token from Streamlit secrets
-client = replicate.Client(api_token=st.secrets["API_TOKEN"])
+client = replicate.Client(api_token=st.secrets["api_key"])
 
 # Function to fetch weather data
 def get_weather_data(api_key, location):
