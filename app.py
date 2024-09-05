@@ -1,165 +1,98 @@
 import streamlit as st
-import requests
 import pandas as pd
-import altair as alt
+import requests
 import replicate
 
-# Function to fetch weather data
+# Helper function to fetch weather data from OpenWeather API
 def get_weather_data(api_key, location):
-    url = f"http://api.openweathermap.org/data/2.5/forecast?q={location}&appid={api_key}&units=metric"
-    response = requests.get(url)
+    base_url = "http://api.openweathermap.org/data/2.5/forecast"
+    params = {
+        "q": location,
+        "appid": api_key,
+        "units": "metric"
+    }
+    response = requests.get(base_url, params=params)
     if response.status_code == 200:
         return response.json()
-    elif response.status_code == 404:
-        st.error(f"Location '{location}' not found. Please check the spelling.")
-    elif response.status_code == 401:
-        st.error("Invalid API key. Please check your credentials.")
     else:
-        st.error(f"Error fetching data: {response.status_code}")
-    return None
+        return {"cod": response.status_code, "message": response.text}
 
-# Function to process weather data
+# Helper function to process weather data
 def process_weather_data(data):
     weather_list = data['list']
-    weather_data = []
-    for entry in weather_list:
-        weather_data.append({
-            "datetime": pd.to_datetime(entry['dt_txt']),
-            "date": pd.to_datetime(entry['dt_txt']).date(),
-            "temp": entry['main']['temp'],
-            "humidity": entry['main']['humidity'],
-            "weather": entry['weather'][0]['description']
+    processed_data = []
+    for weather in weather_list:
+        processed_data.append({
+            "date": pd.to_datetime(weather['dt_txt']).date(),
+            "datetime": pd.to_datetime(weather['dt_txt']),
+            "temp": weather['main']['temp'],
+            "humidity": weather['main']['humidity'],
+            "weather": weather['weather'][0]['description']
         })
-    df = pd.DataFrame(weather_data)
+    df = pd.DataFrame(processed_data)
     return df
 
-# Function to generate recommendations for the current day using Replicate
+# Function to generate a readable weather summary
+def generate_weather_summary(df):
+    summary = []
+    for _, row in df.iterrows():
+        summary.append(f"- **Date**: {row['date']} | **Temp**: {row['temp']}°C | **Humidity**: {row['humidity']}% | **Weather**: {row['weather']}")
+    return "\n".join(summary)
+
+# Function to generate AI recommendations based on the weather summary
 def generate_recommendations(df, client):
     model = "meta/meta-llama-3-8b-instruct"
-    summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
-    st.write("Summary for recommendations:", summary)  # Debug statement
+    summary = generate_weather_summary(df)  # Generate formatted weather summary
+
     input_data = {
-        "prompt": f"Based on the following weather data, provide recommendations. Categories like what to wear and more:\n{summary}",
+        "prompt": f"Based on the following weather data, provide recommendations:\n{summary}",
         "max_new_tokens": 512,
-        "prompt_template": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
     }
+
     recommendations = []
     try:
         for event in client.stream(model, input=input_data):
-            st.write("Event received:", event)  # Debug statement
             if hasattr(event, 'text'):
-                recommendations.append(event.text)  # Extract the text content
+                recommendations.append(event.text.strip())  # Append text from each event
     except replicate.exceptions.ReplicateError as e:
         st.error(f"❌ Error: {e}")
-    formatted_recommendations = "\n\n".join(recommendations)  # Join recommendations with double newlines for better readability
-    return formatted_recommendations
 
-# Streamlit app
-st.set_page_config(page_title="Weather Insights", page_icon="🌤️", layout="wide")
+    return "\n\n".join(recommendations)  # Return formatted recommendations
 
-# Custom CSS for mobile responsiveness
-st.markdown("""
-    <style>
-    .main .block-container {
-        max-width: 1200px;
-        padding: 1rem;
-    }
-    @media (max-width: 600px) {
-        .main .block-container {
-            padding: 0.5rem;
-        }
-        .stDataFrame {
-            overflow-x: auto;
-        }
-    }
-    </style>
-    """, unsafe_allow_html=True)
+# Main Streamlit app logic
+def main():
+    st.title("Weather Forecast & AI Recommendations 🌦️")
+    
+    api_key = "53a8b377d161be08079ec9d785a4e968"  # API key for OpenWeather
+    replicate_api_key = st.secrets["api_key"]  # API key for Replicate
+    
+    # Location input
+    location = st.text_input("Enter a location to get weather forecast", "London")
+    
+    if location:
+        data = get_weather_data(api_key, location)
+        if data and data.get('cod') == '200':
+            df = process_weather_data(data)
+            
+            # Filter the next 5 days weather forecast
+            next_5_days = pd.Timestamp.now() + pd.DateOffset(days=5)
+            df = df[df['datetime'] <= next_5_days]
+            
+            # Display weather data summary
+            st.subheader("Weather Data Summary (Next 5 Days)")
+            weather_summary = generate_weather_summary(df)
+            st.markdown(weather_summary)
+            
+            # Generate and display AI recommendations using the summary
+            client = replicate.Client(api_token=replicate_api_key)
+            with st.spinner('Generating AI Recommendations...'):
+                recommendations = generate_recommendations(df, client)
 
-st.title("🌤️ Weather Insights")
-st.markdown("### Get detailed AI recommendations, weather statistics, including temperature trends, humidity levels, and weather descriptions for the next 5 days. 🌦️🌡️💧")
+            st.subheader("🧠 AI Recommendations for Today")
+            st.markdown(recommendations)
 
-location = st.text_input("Enter a location:", "Lagos,ng")
-st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
+        else:
+            st.error(f"❌ Error: {data.get('message', 'Location not found!')}")
 
-# Securely get API keys
-api_key = "53a8b377d161be08079ec9d785a4e968" # Ensure this is securely stored in Streamlit secrets
-
-
-if location:
-    data = get_weather_data(api_key, location)
-    if data and data.get('cod') == '200':
-        df = process_weather_data(data)
-        
-        next_5_days = pd.Timestamp.now() + pd.DateOffset(days=5)
-        df = df[df['datetime'] <= next_5_days]
-
-        styled_df = df.style.set_properties(**{
-            'background-color': 'lavender',
-            'color': 'black',
-            'border-color': 'white'
-        }).highlight_max(subset=['temp', 'humidity'], color='lightcoral').highlight_min(subset=['temp', 'humidity'], color='lightblue')
-
-        st.write(f"📅 Weather data for {location} (Next 5 Days)")
-        st.dataframe(styled_df)
-
-        st.subheader("🌡️ Temperature Trends")
-        temp_chart = alt.Chart(df).mark_line(point=True).encode(
-            x=alt.X('datetime:T', title='Date', axis=alt.Axis(format='%Y-%m-%d %H:%M')),
-            y=alt.Y('temp:Q', title='Temperature (°C)'),
-            tooltip=[alt.Tooltip('datetime:T', title='Date and Time', format='%Y-%m-%d %H:%M'), 'temp:Q']
-        ).properties(
-            title='Temperature Trends'
-        ).configure_mark(
-            color='orange'
-        ).configure_axis(
-            labelFontSize=12,
-            titleFontSize=14
-        ).configure_title(
-            fontSize=16
-        )
-        st.altair_chart(temp_chart, use_container_width=True)
-
-        st.subheader("💧 Humidity Levels")
-        humidity_chart = alt.Chart(df).mark_line(point=True).encode(
-            x=alt.X('datetime:T', title='Date', axis=alt.Axis(format='%Y-%m-%d %H:%M')),
-            y=alt.Y('humidity:Q', title='Humidity (%)'),
-            tooltip=[alt.Tooltip('datetime:T', title='Date and Time', format='%Y-%m-%d %H:%M'), 'humidity:Q']
-        ).properties(
-            title='Humidity Levels'
-        ).configure_mark(
-            color='blue'
-        ).configure_axis(
-            labelFontSize=12,
-            titleFontSize=14
-        ).configure_title(
-            fontSize=16
-        )
-        st.altair_chart(humidity_chart, use_container_width=True)
-
-        st.subheader("🌈 Weather Description")
-        weather_chart = alt.Chart(df).mark_bar().encode(
-            x=alt.X('weather:N', title='Weather Description'),
-            y=alt.Y('count():Q', title='Frequency'),
-            tooltip=['weather:N', 'count():Q']
-        ).properties(
-            title='Weather Description Frequency'
-        ).configure_mark(
-            color='green'
-        ).configure_axis(
-            labelFontSize=12,
-            titleFontSize=14
-        ).configure_title(
-            fontSize=16
-        )
-        st.altair_chart(weather_chart, use_container_width=True)
-
-        # Initialize the Replicate client with your API token from secrets
-        client = replicate.Client(api_token=st.secrets["api_key"])
-
-        with st.spinner('Generating A.I Recommendations...'):
-            recommendations = generate_recommendations(df, client)
-
-        st.subheader("🧠 A.I Recommendations for Today")
-        st.markdown(recommendations)
-    else:
-        st.error(f"❌ Error: {data.get('message', 'Location not found!')}")
+if __name__ == "__main__":
+    main()
