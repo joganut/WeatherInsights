@@ -85,8 +85,8 @@ if location:
         current_day = pd.Timestamp.now().date()
         df_current_day = df[df['date'] == current_day]
 
-        # Debugging: Check if df_current_day has data
-        st.write("Current Day DataFrame:", df_current_day)
+        # # Debugging: Check if df_current_day has data
+        # st.write("Current Day DataFrame:", df_current_day)
 
         styled_df = df.style.set_properties(**{
             'background-color': 'lavender',
