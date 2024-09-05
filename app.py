@@ -1,4 +1,4 @@
-]import streamlit as st
+import streamlit as st
 import requests
 import pandas as pd
 import altair as alt
