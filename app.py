@@ -29,6 +29,7 @@ def process_weather_data(data):
     return df
 
 # Function to generate recommendations for the current day using Replicate
+@st.cache
 def generate_recommendations(df, replicate_model):
     model = "meta/meta-llama-3-8b-instruct"
     recommendations = []
