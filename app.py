@@ -10,9 +10,13 @@ def get_weather_data(api_key, location):
     response = requests.get(url)
     if response.status_code == 200:
         return response.json()
+    elif response.status_code == 404:
+        st.error(f"Location '{location}' not found. Please check the spelling.")
+    elif response.status_code == 401:
+        st.error("Invalid API key. Please check your credentials.")
     else:
         st.error(f"Error fetching data: {response.status_code}")
-        return None
+    return None
 
 # Function to process weather data
 def process_weather_data(data):
@@ -35,7 +39,7 @@ def generate_recommendations(df, client):
     summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
     st.write("Summary for recommendations:", summary)  # Debug statement
     input_data = {
-        "prompt": f"Based on the following weather data, provide recommendations. categories like what to wear and more:\n{summary}",
+        "prompt": f"Based on the following weather data, provide recommendations. Categories like what to wear and more:\n{summary}",
         "max_new_tokens": 512,
         "prompt_template": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
     }
@@ -76,7 +80,10 @@ st.markdown("### Get detailed AI recommendations, weather statistics, including 
 
 location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
-api_key = "53a8b377d161be08079ec9d785a4e968"
+
+# Securely get API keys
+api_key = st.secrets["openweather_api_key"]  # Ensure this is securely stored in Streamlit secrets
+replicate_api_key = "53a8b377d161be08079ec9d785a4e968"
 
 if location:
     data = get_weather_data(api_key, location)
