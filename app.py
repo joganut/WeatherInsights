@@ -30,7 +30,7 @@ def process_weather_data(data):
 
 # Function to generate recommendations for the current day using Replicate
 def generate_recommendations(df, replicate_model):
-    model = replicate.models.get(replicate_model)
+    model = "meta/meta-llama-3-8b-instruct"
     recommendations = []
     summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
     prompt = f"Based on the following weather data, provide recommendations. categories like what to wear and more:\n{summary}"
