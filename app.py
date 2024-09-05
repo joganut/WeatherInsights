@@ -1,3 +1,34 @@
+]import streamlit as st
+import requests
+import pandas as pd
+import altair as alt
+import replicate
+
+# Function to fetch weather data
+def get_weather_data(api_key, location):
+    url = f"http://api.openweathermap.org/data/2.5/forecast?q={location}&appid={api_key}&units=metric"
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        st.error(f"Error fetching data: {response.status_code}")
+        return None
+
+# Function to process weather data
+def process_weather_data(data):
+    weather_list = data['list']
+    weather_data = []
+    for entry in weather_list:
+        weather_data.append({
+            "datetime": pd.to_datetime(entry['dt_txt']),
+            "date": pd.to_datetime(entry['dt_txt']).date(),
+            "temp": entry['main']['temp'],
+            "humidity": entry['main']['humidity'],
+            "weather": entry['weather'][0]['description']
+        })
+    df = pd.DataFrame(weather_data)
+    return df
+
 # Function to generate recommendations for the current day using Replicate
 def generate_recommendations(df, client):
     model = "meta/meta-llama-3-8b-instruct"
@@ -45,7 +76,7 @@ st.markdown("### Get detailed AI recommendations, weather statistics, including 
 
 location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
-api_key = "53a8b377d161be08079ec9d785a4e968"
+api_key = st.secrets["openweathermap_api_key"]
 
 if location:
     data = get_weather_data(api_key, location)
@@ -116,7 +147,7 @@ if location:
         st.altair_chart(weather_chart, use_container_width=True)
 
         # Initialize the Replicate client with your API token from secrets
-        client = replicate.Client(api_token=st.secrets["api_key"])
+        client = replicate.Client(api_token=st.secrets["replicate_api_key"])
 
         with st.spinner('Generating A.I Recommendations...'):
             recommendations = generate_recommendations(df, client)
