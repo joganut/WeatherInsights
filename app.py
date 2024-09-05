@@ -152,4 +152,5 @@ if location:
             recommendations = generate_recommendations(df_current_day, replicate_model)
 
         st.subheader(f"🧠 A.I Recommendations for Today")
-        st.markdown(recommendations)
+        formatted_text = ''.join(recommendations)
+        st.markdown(formatted_text)
