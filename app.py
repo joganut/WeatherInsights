@@ -5,7 +5,7 @@ import altair as alt
 import replicate
 
 # Initialize the Replicate client with your API token from Streamlit secrets
-client = replicate.Client(api_token=st.secrets["api_key"])
+client = replicate.Client(api_token=st.secrets["api_token"])
 
 # Function to fetch weather data
 def get_weather_data(api_key, location):
@@ -34,8 +34,13 @@ def generate_recommendations(df, replicate_model):
     recommendations = []
     summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
     prompt = f"Based on the following weather data, provide recommendations. categories like what to wear and more:\n{summary}"
-    response = model.predict(prompt=prompt, max_tokens=1024)
-    recommendations.append(f"🌟 {response}")
+    input_data = {
+        "prompt": prompt,
+        "max_new_tokens": 1024,
+        "prompt_template": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+    }
+    for event in client.stream(model, input=input_data):
+        recommendations.append(f"🌟 {event}")
     return recommendations
 
 # Streamlit app
@@ -53,7 +58,7 @@ st.markdown("""
             padding: 0.5rem;
         }
         .stDataFrame {
-            overflow-x: auto;
+            overflow-x: auto.
         }
     }
     </style>
