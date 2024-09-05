@@ -82,8 +82,8 @@ location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
 
 # Securely get API keys
-api_key = st.secrets["openweather_api_key"]  # Ensure this is securely stored in Streamlit secrets
-replicate_api_key = "53a8b377d161be08079ec9d785a4e968"
+api_key = "53a8b377d161be08079ec9d785a4e968" # Ensure this is securely stored in Streamlit secrets
+
 
 if location:
     data = get_weather_data(api_key, location)
