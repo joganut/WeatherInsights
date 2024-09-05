@@ -33,7 +33,7 @@ def generate_recommendations(df, replicate_model):
     model = "meta/meta-llama-3-8b-instruct"
     recommendations = []
     summary = df[['date', 'temp', 'humidity', 'weather']].to_string(index=False)
-    prompt = f"Based on the following weather data, provide recommendations. categories like what to wear and more.try not to add dates just morning, afternoon, evening, night:\n{summary}"
+    prompt = f"Based on the following weather data, provide recommendations. categories like what to wear and more.try not to add dates and time just morning, afternoon, evening, night:\n{summary}"
     input_data = {
         "prompt": prompt,
         "max_new_tokens": 1024,
