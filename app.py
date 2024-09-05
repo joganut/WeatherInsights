@@ -76,7 +76,7 @@ st.markdown("### Get detailed AI recommendations, weather statistics, including 
 
 location = st.text_input("Enter a location:", "Lagos,ng")
 st.markdown("*(Default location is Lagos, Nigeria. You can edit the location above.)*")
-api_key = st.secrets["openweathermap_api_key"]
+api_key = "53a8b377d161be08079ec9d785a4e968"
 
 if location:
     data = get_weather_data(api_key, location)
@@ -147,7 +147,7 @@ if location:
         st.altair_chart(weather_chart, use_container_width=True)
 
         # Initialize the Replicate client with your API token from secrets
-        client = replicate.Client(api_token=st.secrets["replicate_api_key"])
+        client = replicate.Client(api_token=st.secrets["api_key"])
 
         with st.spinner('Generating A.I Recommendations...'):
             recommendations = generate_recommendations(df, client)
